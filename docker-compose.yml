@@ -1,0 +1,54 @@
+version: "2"
+services:
+    client:
+        image: webapp-client
+        restart: always
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./client:/client/src/app
+            - /client/node_modules
+        entrypoint: ["npm","start"]
+        links:
+            - api
+        networks:
+            - webappnetwork
+    api:
+        image: webapp-api
+        restart: always
+        ports:
+            - "9000:9000"
+        volumes:
+            - ./api:/api
+            - /api/node_modules
+        depends_on:
+            - mysql
+        networks:
+            - webappnetwork
+    mysql:
+        image: mongo
+        restart: always
+        container_name: mysql
+        volumes:
+            - ./data-node:/data/db
+        ports:
+            - 27017:27017
+        command: mongod --noauth --smallfiles
+        networks:
+            - webappnetwork
+
+
+    mysql:
+        image: mysql
+        restart: always
+        container_name: mysql
+        environment:
+            MYSQL_DATABASE: nodeapp
+            MYSQL_USER: admin
+            MYSQL_PASSWORD: pass
+            MYSQL_ROOT_PASSWORD: my@secret-root
+        networks:
+            - webappnetwork
+networks:
+    webappnetwork:
+        driver: bridge
